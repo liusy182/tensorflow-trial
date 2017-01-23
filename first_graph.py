@@ -8,3 +8,9 @@ e = tf.add(c, d, name="add_e")
 
 sess = tf.Session()
 print(sess.run(e))
+
+# visualize by py -3 -m tensorflow.tensorboard logdir="my_graph"
+writer = tf.summary.FileWriter('./my_graph', sess.graph)
+
+writer.close()
+sess.close()
