@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 
-# initialize variables/model parameters
+# 5 features, 1 output ( 0 or 1)
 W = tf.Variable(tf.zeros([5, 1]), name="weights")
 b = tf.Variable(0., name="bias")
 
