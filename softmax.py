@@ -7,24 +7,6 @@ W = tf.Variable(tf.zeros([4, 3]), name="weights")
 # so do the biases, one per output class.
 b = tf.Variable(tf.zeros([3], name="bias"))
 
-def read_csv(batch_size, file_name, record_defaults):
-    filename_queue = tf.train.string_input_producer(["data/" + file_name])
-
-    reader = tf.TextLineReader(skip_header_lines=1)
-    key, value = reader.read(filename_queue)
-
-    # decode_csv will convert a Tensor from type string (the text line) in
-    # a tuple of tensor columns with the specified defaults, which also
-    # sets the data type for each column
-    decoded = tf.decode_csv(value, record_defaults=record_defaults)
-
-    # batch actually reads the file and loads "batch_size" rows in a single tensor
-    return tf.train.shuffle_batch(decoded,
-                                  batch_size=batch_size,
-                                  capacity=batch_size * 50,
-                                  min_after_dequeue=batch_size,
-                                  allow_smaller_final_batch=True)
-
 # former inference is now used for combining inputs
 def combine_inputs(X):
     return tf.matmul(X, W) + b
@@ -64,6 +46,25 @@ def evaluate(sess, X, Y):
     predicted = tf.cast(tf.arg_max(inference(X), 1), tf.int32)
     print(sess.run(tf.reduce_mean(tf.cast(tf.equal(predicted, Y), tf.float32))))
 
+
+def read_csv(batch_size, file_name, record_defaults):
+    filename_queue = tf.train.string_input_producer(["data/" + file_name])
+
+    reader = tf.TextLineReader(skip_header_lines=0)
+    key, value = reader.read(filename_queue)
+    
+    # decode_csv will convert a Tensor from type string (the text line) in
+    # a tuple of tensor columns with the specified defaults, which also
+    # sets the data type for each column
+    decoded = tf.decode_csv(value, record_defaults=record_defaults)
+
+    # batch actually reads the file and loads "batch_size" rows in a single tensor
+    return tf.train.shuffle_batch(decoded,
+                                  batch_size=batch_size,
+                                  capacity=batch_size * 50,
+                                  min_after_dequeue=batch_size,
+                                  allow_smaller_final_batch=True)
+
 saver = tf.train.Saver()
 # Launch the graph in a session, setup boilerplate
 with tf.Session() as sess:
@@ -96,9 +97,9 @@ with tf.Session() as sess:
             print("loss: ")
             print(sess.run([total_loss]))
         if step % 1000 == 0:
-            saver.save(sess, 'tmp/my-model', global_step=step)
+            saver.save(sess, 'tmp/softmax-model', global_step=step)
 
-    saver.save(sess, 'tmp/my-model', global_step=training_steps)
+    saver.save(sess, 'tmp/softmax-model', global_step=training_steps)
 
     evaluate(sess, X, Y)
     coord.request_stop()
