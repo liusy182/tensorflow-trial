@@ -4,9 +4,8 @@ import os
 import re
 from lxml import etree
 import numpy as np
-from attrdict import AttrDict
 import tensorflow as tf
-import lazy_property
+from utils import *
 
 TOKEN_REGEX = re.compile(r'[A-Za-z]+|[!?.:,()]')
 
@@ -116,20 +115,20 @@ class EmbeddingModel:
         self.cost
         self.optimize
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def embeddings(self):
         initial = tf.random_uniform(
             [self.params.vocabulary_size, self.params.embedding_size],
             -1.0, 1.0)
         return tf.Variable(initial)
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def optimize(self):
         optimizer = tf.train.MomentumOptimizer(
             self.params.learning_rate, self.params.momentum)
         return optimizer.minimize(self.cost)
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def cost(self):
         embedded = tf.nn.embedding_lookup(self.embeddings, self.data)
         weight = tf.Variable(tf.truncated_normal(

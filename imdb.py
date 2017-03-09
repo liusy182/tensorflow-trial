@@ -2,7 +2,7 @@ import tarfile
 import re
 import bz2
 import numpy as np
-from attrdict import AttrDict
+from utils import *
 
 class ImdbMovieReviews:
 
@@ -61,14 +61,14 @@ class SequenceClassificationModel:
         self.error
         self.optimize
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def length(self):
         used = tf.sign(tf.reduce_max(tf.abs(self.data), reduction_indices=2))
         length = tf.reduce_sum(used, reduction_indices=1)
         length = tf.cast(length, tf.int32)
         return length
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def prediction(self):
         # Recurrent network.
         output, _ = tf.nn.dynamic_rnn(
@@ -86,18 +86,18 @@ class SequenceClassificationModel:
         prediction = tf.nn.softmax(tf.matmul(last, weight) + bias)
         return prediction
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def cost(self):
         cross_entropy = -tf.reduce_sum(self.target * tf.log(self.prediction))
         return cross_entropy
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def error(self):
         mistakes = tf.not_equal(
             tf.argmax(self.target, 1), tf.argmax(self.prediction, 1))
         return tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
-    @lazy_property.LazyProperty
+    @lazy_property
     def optimize(self):
         gradient = self.params.optimizer.compute_gradients(self.cost)
         if self.params.gradient_clipping:
