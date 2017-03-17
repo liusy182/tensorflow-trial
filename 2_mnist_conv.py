@@ -29,42 +29,42 @@ def max_pool_2x2(x):
                         strides=[1, 2, 2, 1], padding='SAME')
 
 
-
 def main(_):
-  mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
-
+  
   # Create the model
   x = tf.placeholder(tf.float32, [None, 784])
   W = tf.Variable(tf.zeros([784, 10]))
   b = tf.Variable(tf.zeros([10]))
   y = tf.matmul(x, W) + b
-
-  # Define loss and optimizer
   y_ = tf.placeholder(tf.float32, [None, 10])
 
   # conv layer 1
-  # compute 32 feature for each 5 x 5 patch.
+
+  # filter_height, filter_width, in_channels, out_channels
   W_conv1 = weight_variable([5, 5, 1, 32])
   b_conv1 = bias_variable([32])
-  #28 x 28 image, 1 color channel,
+
+  # batch, in_heigh, in_width, in_channels
   x_image = tf.reshape(x, [-1,28,28,1])
   h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+  # dimension reduction 28 -> 14
   h_pool1 = max_pool_2x2(h_conv1)
 
 
   # conv layer 2
-  # 64 feature for each 5 x 5 patch.
+  # filter_height, filter_width, in_channels, out_channels
   W_conv2 = weight_variable([5, 5, 32, 64])
   b_conv2 = bias_variable([64])
 
   h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+  # dimension reduction 14 -> 7
   h_pool2 = max_pool_2x2(h_conv2)
 
   # densely connected layer
   W_fc1 = weight_variable([7 * 7 * 64, 1024])
   b_fc1 = bias_variable([1024])
 
-  h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
+  h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
   h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
   # dropout layer
@@ -91,9 +91,10 @@ def main(_):
   sess = tf.InteractiveSession()
   sess.run(tf.global_variables_initializer())
 
+  mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
   for i in range(20000):
     batch = mnist.train.next_batch(50)
-    if i%100 == 0:
+    if i%200 == 0:
       train_accuracy = accuracy.eval(feed_dict={
           x:batch[0], y_: batch[1], keep_prob: 1.0})
       print("step %d, training accuracy %g"%(i, train_accuracy))
